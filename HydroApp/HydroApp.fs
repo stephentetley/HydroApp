@@ -8,21 +8,10 @@ open Elmish.XamarinForms
 open Elmish.XamarinForms.DynamicViews
 open Xamarin.Forms
 
+open DataModel
+
 module App = 
-
-
-    type Hydro = 
-        | Hydroranger
-        | HydroPlus
-        | Hydro200
     
-    /// The model from which the view is generated
-    type Model =
-        { HydroType: Hydro
-          SerialNumber: string
-          Span: option<decimal>
-          Spill: option<decimal> }
-
     let optionText (fn:'a -> string) (source:option<'a>) : string = 
         match source with
         | None -> ""
@@ -40,7 +29,8 @@ module App =
         { HydroType = HydroPlus
           SerialNumber = ""
           Span = None
-          Spill = None }
+          Spill = None
+          Relays = Map.empty }
 
     /// The funtion to update the view
     let update (msg:Msg) (model:Model) : Model =
@@ -58,11 +48,6 @@ module App =
             with
             | _ -> model
     
-    let pickerItems = 
-        [| ("Hydroranger",          Hydro.Hydroranger)
-         ; ("Hydroranger Plus",     Hydro.HydroPlus)
-         ; ("Hydroranger 200",      Hydro.Hydro200) 
-        |]
 
 
     /// The view function giving updated content for the page
@@ -72,12 +57,12 @@ module App =
         View.ContentPage(
           content = View.StackLayout(padding = 20.0, verticalOptions = LayoutOptions.Center,
             children = 
-                [ View.Label(text="Hydro:")
+                [ View.Label(text="Model:")
                 ; View.Picker(title="Select Controller Model:", 
                                       selectedIndex=0, 
-                                      itemsSource=(Array.map fst pickerItems), 
+                                      itemsSource= pickListSource hydroPickList, 
                                       horizontalOptions=LayoutOptions.Start, 
-                                      selectedIndexChanged= fun (i, item) -> dispatch (HydroChanged (snd pickerItems.[i])))
+                                      selectedIndexChanged= fun (i, item) -> dispatch (HydroChanged (snd hydroPickList.[i])))
                 ; View.Label(text="Serial Number:")
                 ; View.Entry(text= model.SerialNumber, 
                              textChanged = fun (args:TextChangedEventArgs) -> dispatch (SerialNumberChanged args.NewTextValue))

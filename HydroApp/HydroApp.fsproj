@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DataModel.fs" />
     <Compile Include="HydroApp.fs" />
   </ItemGroup>
   <ItemGroup>
