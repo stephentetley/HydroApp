@@ -17,9 +17,11 @@ module App =
 
     /// The messages dispatched by the view
     type Msg =
+        | PagePopped
         | FieldEngineerChanged of string
         | SiteChanged of string
         | DateOfSurveyChanged of System.DateTime
+        | HomeNextPressed
         | HydroChanged of LevelControlType
         | SerialNumberChanged of string
         | SpanChanged of string
@@ -27,7 +29,8 @@ module App =
 
     /// Returns the initial state
     let init() : Model = 
-        { SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
+        { PageStack = ["Home"]
+          SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
           LevelControl = 
             { LCType = HydroPlus
               TypeIfOther = ""
@@ -41,6 +44,7 @@ module App =
     /// The funtion to update the view
     let update (msg:Msg) (model:Model) : Model =
         match msg with
+        | HomeNextPressed -> { model with PageStack = ("Hydro" :: model.PageStack) }
         | HydroChanged t -> { model with LevelControl = { model.LevelControl with LCType = t } }
         | SerialNumberChanged s -> { model with LevelControl = { model.LevelControl with SerialNumber = s } }
         | SpanChanged s -> 
@@ -71,6 +75,7 @@ module App =
                     ; View.DatePicker( date = model.SurveyInfo.DateOfSurvey,
                                         format = "dd MMM yyyy",
                                         dateSelected = fun (args:DateChangedEventArgs) -> dispatch (DateOfSurveyChanged args.NewDate))
+                    ; View.Button( text = "Next", command = (fun () -> dispatch HomeNextPressed ))
 
                     ]))
 
@@ -102,7 +107,18 @@ module App =
 
     /// The view function giving updated content for the page
     let view (model: Model) (dispatch : Msg -> unit) : ViewElement =
-        startPage model dispatch
+        View.NavigationPage(
+            pages =
+                match model.PageStack with
+                | "Home" :: _ -> 
+                    let homePage : ViewElement = (startPage model dispatch).HasNavigationBar(true).HasBackButton(false)
+                    [homePage]
+                | "Hydro" :: _ ->
+                    let homePage : ViewElement = (startPage model dispatch).HasNavigationBar(true).HasBackButton(false)
+                    let hydroPage : ViewElement = (hydroPage model dispatch).HasNavigationBar(true).HasBackButton(true)
+                    [homePage; hydroPage]
+                )
+
 
     // let program = Program.mkProgram init update view
 

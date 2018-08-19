@@ -50,6 +50,9 @@ module DataModel =
          ; ("Other, please specify...",     LCOther)
         |]
 
+    
+
     type Model = 
-        { SurveyInfo: SurveyInfo
+        { PageStack: string list 
+          SurveyInfo: SurveyInfo
           LevelControl: LevelControl }
