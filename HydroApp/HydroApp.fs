@@ -8,73 +8,101 @@ open Elmish.XamarinForms
 open Elmish.XamarinForms.DynamicViews
 open Xamarin.Forms
 
-open DataModel
+open HydroApp.Common
+open HydroApp.DataModel
 
 module App = 
     
-    let optionText (fn:'a -> string) (source:option<'a>) : string = 
-        match source with
-        | None -> ""
-        | Some a -> fn a
+
 
     /// The messages dispatched by the view
     type Msg =
-        | HydroChanged of Hydro
+        | FieldEngineerChanged of string
+        | SiteChanged of string
+        | DateOfSurveyChanged of System.DateTime
+        | HydroChanged of LevelControlType
         | SerialNumberChanged of string
         | SpanChanged of string
         | SpillChanged of string
 
     /// Returns the initial state
     let init() : Model = 
-        { HydroType = HydroPlus
-          SerialNumber = ""
-          Span = None
-          Spill = None
-          Relays = Map.empty }
+        { SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
+          LevelControl = 
+            { LCType = HydroPlus
+              TypeIfOther = ""
+              SerialNumber = ""
+              Span = None
+              Spill = None
+              Relays = Map.empty }
+        }
+          
 
     /// The funtion to update the view
     let update (msg:Msg) (model:Model) : Model =
         match msg with
-        | HydroChanged t -> { model with HydroType = t }
-        | SerialNumberChanged s -> { model with SerialNumber = s}
+        | HydroChanged t -> { model with LevelControl = { model.LevelControl with LCType = t } }
+        | SerialNumberChanged s -> { model with LevelControl = { model.LevelControl with SerialNumber = s } }
         | SpanChanged s -> 
             try
-                let d = decimal s in { model with Span = Some d}
+                let d = decimal s in { model with LevelControl = { model.LevelControl with Span = Some d } }
             with
             | _ -> model
         | SpillChanged s -> 
             try
-                let d = decimal s in { model with Spill = Some d}
+                let d = decimal s in { model with LevelControl = { model.LevelControl with Spill = Some d } }
             with
             | _ -> model
     
 
+    let startPage (model : Model) (dispatch : Msg -> unit) : ViewElement = 
+        View.ContentPage(
+            content = View.StackLayout(
+                padding = 20.0, 
+                verticalOptions = LayoutOptions.Center,
+                children = 
+                    [ View.Label(text="Engineer Name:")
+                    ; View.Entry(text= model.SurveyInfo.EngineerName, 
+                                    textChanged = fun (args:TextChangedEventArgs) -> dispatch (FieldEngineerChanged args.NewTextValue))
+                    ; View.Label(text="Site:")
+                    ; View.Entry(text= model.SurveyInfo.Site, 
+                                    textChanged = fun (args:TextChangedEventArgs) -> dispatch (SiteChanged args.NewTextValue))
+                    ; View.Label(text="Date of Survey:")
+                    ; View.DatePicker( date = model.SurveyInfo.DateOfSurvey,
+                                        format = "dd MMM yyyy",
+                                        dateSelected = fun (args:DateChangedEventArgs) -> dispatch (DateOfSurveyChanged args.NewDate))
+
+                    ]))
+
+    let hydroPage (model : Model) (dispatch : Msg -> unit) : ViewElement = 
+        View.ContentPage(
+            content = 
+                View.StackLayout(
+                    padding = 20.0, 
+                    verticalOptions = LayoutOptions.Center,
+                    children = 
+                        [ View.Label(text="Model:")
+                        ; View.Picker(title="Select Controller Model:", 
+                                              selectedIndex=0, 
+                                              itemsSource= pickListSource levelControlPickList, 
+                                              horizontalOptions=LayoutOptions.Start, 
+                                              selectedIndexChanged= fun (i, item) -> dispatch (HydroChanged (snd levelControlPickList.[i])))
+                        ; View.Label(text="Serial Number:")
+                        ; View.Entry(text= model.LevelControl.SerialNumber, 
+                                     textChanged = fun (args:TextChangedEventArgs) -> dispatch (SerialNumberChanged args.NewTextValue))
+                        ; View.Label(text="Span:")
+                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.LevelControl.Span,
+                                     keyboard = Keyboard.Numeric,
+                                     textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpanChanged args.NewTextValue))
+                        ; View.Label(text="Spill:")
+                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.LevelControl.Spill, 
+                                     keyboard = Keyboard.Numeric,
+                                     textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpillChanged args.NewTextValue))
+                        ]))
 
     /// The view function giving updated content for the page
-    let view (model: Model) dispatch  =
-        // the original code cause object not set errors, but it works once we add
-        // it into a contentPage
-        View.ContentPage(
-          content = View.StackLayout(padding = 20.0, verticalOptions = LayoutOptions.Center,
-            children = 
-                [ View.Label(text="Model:")
-                ; View.Picker(title="Select Controller Model:", 
-                                      selectedIndex=0, 
-                                      itemsSource= pickListSource hydroPickList, 
-                                      horizontalOptions=LayoutOptions.Start, 
-                                      selectedIndexChanged= fun (i, item) -> dispatch (HydroChanged (snd hydroPickList.[i])))
-                ; View.Label(text="Serial Number:")
-                ; View.Entry(text= model.SerialNumber, 
-                             textChanged = fun (args:TextChangedEventArgs) -> dispatch (SerialNumberChanged args.NewTextValue))
-                ; View.Label(text="Span:")
-                ; View.Entry(text = optionText (fun a -> a.ToString()) model.Span,
-                             keyboard = Keyboard.Numeric,
-                             textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpanChanged args.NewTextValue))
-                ; View.Label(text="Spill:")
-                ; View.Entry(text = optionText (fun a -> a.ToString()) model.Spill, 
-                             keyboard = Keyboard.Numeric,
-                             textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpillChanged args.NewTextValue))
-                ]))
+    let view (model: Model) (dispatch : Msg -> unit) : ViewElement =
+        startPage model dispatch
 
     // let program = Program.mkProgram init update view
 

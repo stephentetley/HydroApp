@@ -3,14 +3,25 @@
 
 namespace HydroApp
 
+
+open HydroApp.Common
+
 module DataModel = 
 
 
-    type Hydro = 
+    //
+    type SurveyInfo = 
+        { EngineerName: string 
+          DateOfSurvey: System.DateTime
+          Site: string }
+
+
+    type LevelControlType = 
         | Hydroranger
         | Multianger
         | HydroPlus
         | Hydro200
+        | LCOther
 
     type Relay = 
         { RelayName: string 
@@ -21,21 +32,24 @@ module DataModel =
     type Relays = Map<int,Relay>
 
     /// The model from which the view is generated
-    type Model =
-        { HydroType: Hydro
+    type LevelControl =
+        { LCType: LevelControlType
+          TypeIfOther: string
           SerialNumber: string
           Span: option<decimal>
           Spill: option<decimal>
           Relays: Relays }
 
+    
 
-    type PickList<'a> = array<string * 'a>
-
-    let pickListSource (items:PickList<'a>) : array<string> = Array.map fst items
-
-    let hydroPickList : PickList<Hydro> = 
-        [| ("Hydroranger",          Hydro.Hydroranger)
-         ; ("Multiranger",          Hydro.Multianger)
-         ; ("Hydroranger Plus",     Hydro.HydroPlus)
-         ; ("Hydroranger 200",      Hydro.Hydro200) 
+    let levelControlPickList : PickList<LevelControlType> = 
+        [| ("Hydroranger",                  Hydroranger)
+         ; ("Multiranger",                  Multianger)
+         ; ("Hydroranger Plus",             HydroPlus)
+         ; ("Hydroranger 200",              Hydro200) 
+         ; ("Other, please specify...",     LCOther)
         |]
+
+    type Model = 
+        { SurveyInfo: SurveyInfo
+          LevelControl: LevelControl }
