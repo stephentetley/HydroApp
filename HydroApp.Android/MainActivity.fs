@@ -2,6 +2,7 @@
 namespace HydroApp.Android
 
 open System
+open System.IO
 
 open Android.App
 open Android.Content
@@ -15,6 +16,11 @@ open Xamarin.Forms.Platform.Android
 [<Activity (Label = "HydroApp.Android", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = (ConfigChanges.ScreenSize ||| ConfigChanges.Orientation))>]
 type MainActivity() =
     inherit FormsAppCompatActivity()
+
+    let getDbPath() =
+        let path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+        Path.Combine(path, "hydro.db3");
+
     override this.OnCreate (bundle: Bundle) =
         FormsAppCompatActivity.TabLayoutResource <- Resources.Layout.Tabbar
         FormsAppCompatActivity.ToolbarResource <- Resources.Layout.Toolbar
@@ -24,7 +30,8 @@ type MainActivity() =
 
         Xamarin.Forms.Forms.Init (this, bundle)
 
-        let appcore  = new HydroApp.App()
+        let dbPath = getDbPath()
+        let appcore  = new HydroApp.App(dbPath)
         this.LoadApplication (appcore)
 
     override this.OnRequestPermissionsResult(requestCode: int, permissions: string[], [<GeneratedEnum>] grantResults: Android.Content.PM.Permission[]) =

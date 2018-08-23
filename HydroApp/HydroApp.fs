@@ -9,6 +9,7 @@ open Elmish.XamarinForms.DynamicViews
 open Xamarin.Forms
 
 open HydroApp.Common
+open HydroApp.Database
 open HydroApp.DataModel
 
 module App = 
@@ -27,8 +28,10 @@ module App =
         | SpanChanged of string
         | SpillChanged of string
 
+
+
     /// Returns the initial state
-    let init() : Model = 
+    let init (dbPath:string) () : Model = 
         { PageStack = ["Home"]
           SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
           LevelControl = 
@@ -45,6 +48,7 @@ module App =
     let update (msg:Msg) (model:Model) : Model =
         match msg with
         | HomeNextPressed -> { model with PageStack = ("Hydro" :: model.PageStack) }
+        | FieldEngineerChanged s -> { model with SurveyInfo = { model.SurveyInfo with EngineerName = s } }
         | HydroChanged t -> { model with LevelControl = { model.LevelControl with LCType = t } }
         | SerialNumberChanged s -> { model with LevelControl = { model.LevelControl with SerialNumber = s } }
         | SpanChanged s -> 
@@ -122,12 +126,12 @@ module App =
 
     // let program = Program.mkProgram init update view
 
-type App () as app =
+type App (dbPath:string) as app =
     inherit Application ()
 
     let runner =
         // Program.mkProgram App.init App.update App.view
-        Program.mkSimple App.init App.update App.view
+        Program.mkSimple (App.init dbPath) App.update App.view
         |> Program.withConsoleTrace
         |> Program.runWithDynamicView app
 
