@@ -12,25 +12,46 @@ open Android.Views
 open Android.Widget
 open Android.OS
 open Xamarin.Forms.Platform.Android
+open Xamarin.Android
 
 [<Activity (Label = "HydroApp.Android", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = (ConfigChanges.ScreenSize ||| ConfigChanges.Orientation))>]
 type MainActivity() =
     inherit FormsAppCompatActivity()
 
-    let getDbPath() =
+    let getDbFile() =
         let path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
-        Path.Combine(path, "hydro.db3");
+        Path.Combine(path, "hydro.db");
+
+    let readWriteStream (ins : Stream) (outs : Stream) : unit = 
+        let buffer : Byte[] = Array.zeroCreate 256
+        let rec work (bytesRead : int) : unit = 
+            if bytesRead <= 0 then 
+                ins.Close() 
+                outs.Close ()
+            else
+                outs.Write(buffer, 0, bytesRead)
+                let bytesRead = ins.Read(buffer, 0, 256)
+                work bytesRead
+        let bytesRead = ins.Read(buffer, 0, 256)
+        work bytesRead
 
     override this.OnCreate (bundle: Bundle) =
         FormsAppCompatActivity.TabLayoutResource <- Resources.Layout.Tabbar
         FormsAppCompatActivity.ToolbarResource <- Resources.Layout.Toolbar
         base.OnCreate (bundle)
 
+        let dbFile = getDbFile ()
+        if System.IO.File.Exists(dbFile) = false then 
+            let ins : Stream = Res.Resources.System.OpenRawResource(Resources.Raw.hydro)
+            let outs : FileStream = new FileStream(dbFile, FileMode.OpenOrCreate, FileAccess.Write)
+            readWriteStream ins outs
+
+        
         Xamarin.Essentials.Platform.Init(this, bundle)
 
         Xamarin.Forms.Forms.Init (this, bundle)
-
-        let dbPath = getDbPath()
+       
+        let dbPath = getDbFile()
         let appcore  = new HydroApp.App(dbPath)
         this.LoadApplication (appcore)
 
