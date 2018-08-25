@@ -3963,7 +3963,7 @@ namespace HydroApp.Android
 		{
 			
 			// aapt resource value: 0x7f080000
-			public const int hydro = 2131230720;
+			public const int HydroApp = 2131230720;
 			
 			static Raw()
 			{

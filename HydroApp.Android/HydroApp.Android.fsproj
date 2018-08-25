@@ -38,6 +38,9 @@
     <ErrorReport>prompt</ErrorReport>
     <AndroidLinkMode>None</AndroidLinkMode>
     <ConsolePause>False</ConsolePause>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -114,7 +117,9 @@
     <AndroidResource Include="Resources\mipmap-xxhdpi\launcher_foreground.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\launcher_foreground.png" />
-    <AndroidResource Include="Resources\Raw\hydro.db" />
+    <AndroidResource Include="Resources\Raw\HydroApp.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidResource>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

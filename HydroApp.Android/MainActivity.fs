@@ -12,7 +12,6 @@ open Android.Views
 open Android.Widget
 open Android.OS
 open Xamarin.Forms.Platform.Android
-open Xamarin.Android
 
 [<Activity (Label = "HydroApp.Android", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = (ConfigChanges.ScreenSize ||| ConfigChanges.Orientation))>]
 type MainActivity() =
@@ -41,8 +40,8 @@ type MainActivity() =
         base.OnCreate (bundle)
 
         let dbFile = getDbFile ()
-        if System.IO.File.Exists(dbFile) = false then 
-            let ins : Stream = Res.Resources.System.OpenRawResource(Resources.Raw.hydro)
+        if not <| System.IO.File.Exists(dbFile) then 
+            let ins : Stream  = this.ApplicationContext.Resources.OpenRawResource(Resources.Raw.HydroApp)
             let outs : FileStream = new FileStream(dbFile, FileMode.OpenOrCreate, FileAccess.Write)
             readWriteStream ins outs
 
