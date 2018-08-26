@@ -9,7 +9,9 @@
     <Compile Include="Common.fs" />
     <Compile Include="Database.fs" />
     <Compile Include="DataModel.fs" />
-    <Compile Include="HydroApp.fs" />
+    <Compile Include="SitePage.fs" />
+    <Compile Include="HydroPage.fs" />
+    <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="sqlite-net-pcl" Version="1.4.118" />
