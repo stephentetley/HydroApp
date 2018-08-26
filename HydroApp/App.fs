@@ -22,19 +22,17 @@ module Application =
         | HydroPageMsg of HydroPage.Msg
 
 
+    type Model = 
+        { PageStack: string list 
+          SitePageModel: SitePage.Model
+          HydroPageModel: HydroPage.Model }
 
 
     /// Returns the initial state
     let init (dbPath:string) () : Model = 
         { PageStack = ["Home"]
-          SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
-          LevelControl = 
-            { LCType = HydroPlus
-              TypeIfOther = ""
-              SerialNumber = ""
-              Span = None
-              Spill = None
-              Relays = Map.empty }
+          SitePageModel = SitePage.init ()
+          HydroPageModel = HydroPage.init ()
         }
           
 
@@ -50,10 +48,10 @@ module Application =
     let view (model: Model) (dispatch : Msg -> unit) : ViewElement =
         
         let homePage : ViewElement = 
-            (SitePage.view model (SitePageMsg >> dispatch)).HasNavigationBar(true).HasBackButton(false)
+            (SitePage.view model.SitePageModel (SitePageMsg >> dispatch)).HasNavigationBar(true).HasBackButton(false)
         
         let hydroPage : ViewElement = 
-            (HydroPage.view model (HydroPageMsg >> dispatch)).HasNavigationBar(true).HasBackButton(true)
+            (HydroPage.view model.HydroPageModel (HydroPageMsg >> dispatch)).HasNavigationBar(true).HasBackButton(true)
 
         View.NavigationPage(
             pages = [homePage; hydroPage]

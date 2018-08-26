@@ -10,10 +10,18 @@ open Xamarin.Forms
 
 open HydroApp.Common
 open HydroApp.Database
-open HydroApp.DataModel
+
 
 module SitePage = 
     
+
+
+    type Model = 
+        { 
+            EngineerName: string 
+            DateOfSurvey: System.DateTime
+            Site: string 
+        }
 
 
     /// The messages dispatched by the view
@@ -28,11 +36,19 @@ module SitePage =
         | GoFoward
 
 
+    /// Returns the initial state
+    let init () : Model = 
+        {   
+            EngineerName = ""
+            DateOfSurvey = System.DateTime.Now
+            Site = ""
+        }
+          
 
     /// The funtion to update the view
     let update (msg:Msg) (model:Model) : Model =
         match msg with
-        | FieldEngineerChanged s -> { model with SurveyInfo = { model.SurveyInfo with EngineerName = s } }
+        | FieldEngineerChanged s -> { model with EngineerName = s }
         
 
     let view (model : Model) (dispatch : Msg -> unit) : ViewElement = 
@@ -42,13 +58,13 @@ module SitePage =
                 verticalOptions = LayoutOptions.Center,
                 children = 
                     [ View.Label(text="Engineer Name:")
-                    ; View.Entry(text= model.SurveyInfo.EngineerName, 
+                    ; View.Entry(text= model.EngineerName, 
                                     textChanged = fun (args:TextChangedEventArgs) -> dispatch (FieldEngineerChanged args.NewTextValue))
                     ; View.Label(text="Site:")
-                    ; View.Entry(text= model.SurveyInfo.Site, 
+                    ; View.Entry(text= model.Site, 
                                     textChanged = fun (args:TextChangedEventArgs) -> dispatch (SiteChanged args.NewTextValue))
                     ; View.Label(text="Date of Survey:")
-                    ; View.DatePicker( date = model.SurveyInfo.DateOfSurvey,
+                    ; View.DatePicker( date = model.DateOfSurvey,
                                         format = "dd MMM yyyy",
                                         dateSelected = fun (args:DateChangedEventArgs) -> dispatch (DateOfSurveyChanged args.NewDate))
                     ; View.Button( text = "Next", command = (fun () -> dispatch SiteNextTapped ))

@@ -10,10 +10,32 @@ open Xamarin.Forms
 
 open HydroApp.Common
 open HydroApp.Database
-open HydroApp.DataModel
 
 module HydroPage = 
     
+    type LevelControlType = 
+        | Hydroranger
+        | Multianger
+        | HydroPlus
+        | Hydro200
+        | LCOther
+
+    type Relay = 
+        { RelayName: string 
+          RelayStart: option<decimal>
+          RelayStop: option<decimal> }
+
+    
+    type Relays = Map<int,Relay>
+
+    /// The model from which the view is generated
+    type Model =
+        { LCType: LevelControlType
+          TypeIfOther: string
+          SerialNumber: string
+          Span: option<decimal>
+          Spill: option<decimal>
+          Relays: Relays }
 
     /// The messages dispatched by the view
     type Msg =
@@ -24,22 +46,29 @@ module HydroPage =
 
 
 
+    let levelControlPickList : PickList<LevelControlType> = 
+        [| ("Hydroranger",                  Hydroranger)
+         ; ("Multiranger",                  Multianger)
+         ; ("Hydroranger Plus",             HydroPlus)
+         ; ("Hydroranger 200",              Hydro200) 
+         ; ("Other, please specify...",     LCOther)
+        |]
+
+    
     /// Returns the initial state
-    let init (dbPath:string) () : Model = 
-        { PageStack = ["Home"]
-          SurveyInfo = { EngineerName = ""; DateOfSurvey = System.DateTime.Now; Site = "" }
-          LevelControl = 
-            { LCType = HydroPlus
-              TypeIfOther = ""
-              SerialNumber = ""
-              Span = None
-              Spill = None
-              Relays = Map.empty }
+    let init () : Model = 
+        {   
+            LCType = HydroPlus
+            TypeIfOther = ""
+            SerialNumber = ""
+            Span = None
+            Spill = None
+            Relays = Map.empty
         }
           
 
     /// The funtion to update the view
-    let update (msg:Msg) (model:LevelControl) : LevelControl =
+    let update (msg:Msg) (model:Model) : Model =
         match msg with
         | HydroChanged t -> { model with LCType = t } 
         | SerialNumberChanged s -> { model with SerialNumber = s }
@@ -70,14 +99,14 @@ module HydroPage =
                                               horizontalOptions=LayoutOptions.Start, 
                                               selectedIndexChanged= fun (i, item) -> dispatch (HydroChanged (snd levelControlPickList.[i])))
                         ; View.Label(text="Serial Number:")
-                        ; View.Entry(text= model.LevelControl.SerialNumber, 
+                        ; View.Entry(text= model.SerialNumber, 
                                      textChanged = fun (args:TextChangedEventArgs) -> dispatch (SerialNumberChanged args.NewTextValue))
                         ; View.Label(text="Span:")
-                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.LevelControl.Span,
+                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.Span,
                                      keyboard = Keyboard.Numeric,
                                      textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpanChanged args.NewTextValue))
                         ; View.Label(text="Spill:")
-                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.LevelControl.Spill, 
+                        ; View.Entry(text = optionText (fun a -> a.ToString()) model.Spill, 
                                      keyboard = Keyboard.Numeric,
                                      textChanged = fun (args:TextChangedEventArgs) -> dispatch (SpillChanged args.NewTextValue))
                         ]))
